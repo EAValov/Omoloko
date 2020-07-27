@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "OrderPayment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Scripts {
+    <script type="text/javascript">
+        $("#payment-request-form").submit(function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: "POST",
+                url: '/PaymentRequest/CompletePaymentRequest',
+                data: form.serialize(),
+                success: function (data) {
+                    if (data.result == 'Redirect')
+                        window.location = data.url;
+                },
+                error: function (err) {
+                    console.log(err);
+                    alert(err.responseText)
+                }
+            });
+        });
+
+
+        $(document).ready(function () {
+            var payment_request = @ViewBag.PaymentRequestID;
+            $.ajax({
+                type: "GET",
+                url: '/PaymentRequest/GetOrderByPaymentRequestID?paymentRequestID=' + payment_request,
+                success: function (data) {
+                    $('#payment-request-form :button').attr("disabled", false);
+                    $('#payment-request-form :input[name="OrderID"]').val(data.orderID);
+                    $('#payment-request-form :input[name="PaymentRequestID"]').val(payment_request);
+                    $('#payment-request-form :input[name="Number"]').val(data.number)
+                    $('#payment-request-form :input[name="ClientEmail"]').val(data.clientEmail)
+                },
+                error: function (err) {
+                    console.log(err);
+                    alert(err.responseText)
+                }
+            });
+        });
+    </script>
+}
+
+<div class="col-sm-6 col-sm-offset-3">
+    <div class="panel panel-default">
+        <div class="panel-heading">Оплата заказа</div>
+        <div class="panel-body">
+            <form id="payment-request-form">
+                <div class="form-group">
+                    <input class="form-control" name="OrderID" type="hidden" />
+                    <input class="form-control" name="PaymentRequestID" type="hidden" />
+
+                    <label class="control-label">Номер заказа</label>
+                    <input class="form-control" name="Number" readonly />
+
+                    <label class="control-label">Email пользователя</label>
+                    <input class="form-control" name="ClientEmail" readonly />
+                </div>
+                <button type="submit" class="btn btn-default">Оплатить</button>
+            </form>
+        </div>
+    </div>
+</div>

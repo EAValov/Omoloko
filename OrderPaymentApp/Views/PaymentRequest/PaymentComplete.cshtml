@@ -1,0 +1,12 @@
+﻿@using OrderPaymentApp.Model.DataModel
+@model OrderPayment
+@{
+    ViewBag.Title = "PaymentComplete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="col-sm-6 col-sm-offset-3">
+    <div class="panel panel-success">
+        <div class="panel-heading">Заказ успешно оплачен</div>
+        <div class="panel-body">Заказ "@Model.Number" успешно оплачен.</div>
+    </div>
+</div>

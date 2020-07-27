@@ -1,0 +1,82 @@
+﻿@{
+    ViewBag.Title = "Orders";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Scripts {
+    <script type="text/javascript">
+        $.validator.addMethod("orderNumberRegex", function (value, element, regexpr) {
+            return regexpr.test(value);
+        }, "Неправильный номер заказа");
+        
+        $('#order-form :input[name="Number"]').on('change', function () {
+            $('#order-form :button').attr("disabled", true);
+            var form = $("#order-form");
+            form.validate({
+                rules: {
+                    Number: {
+                        required: true,
+                        orderNumberRegex: /(([0-9]\d{1})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])-\d{6})/
+                    }
+                }
+            });
+
+            if (form.valid()) {     
+                var number = $('#order-form :input[name="Number"]').val();
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Order/GetOrderByNumber?orderNumber=' + number,
+                    contentType: 'json',
+                    success: function (result) {
+                        $('#order-form :button').attr("disabled", false);
+                        $('#order-form :input[name="OrderID"]').val(result.orderID);
+                        $('#order-form :input[name="ClientEmail"]').val(result.clientEmail)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        alert(err.responseText)
+                    }
+                });
+            }      
+        });
+
+        $("#order-form").submit(function (e) {
+            e.preventDefault(); 
+
+            var form = $(this);
+            $.ajax({
+                type: "POST",
+                url: '/Order/CreatePaymentRequest',
+                data: form.serialize(), 
+                success: function (data) {
+                    alert(data); 
+                },
+                error: function (err) {
+                    console.log(err);
+                    alert(err.responseText)
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $('#order-form :button').attr("disabled", true);
+        });
+    </script>
+}
+
+<div class="col-sm-6 col-sm-offset-3">
+    <div class="panel panel-default">
+        <div class="panel-heading">Создание ссылки на оплату</div>
+        <div class="panel-body">
+            <form id="order-form">
+                <div class="form-group">
+                    <label class="control-label">Номер заказа</label>
+                    <input class="form-control" name="Number" />
+                    <input class="form-control" name="OrderID" type="hidden"/>
+                    <input class="form-control" name="ClientEmail" type="hidden"/>
+                </div>
+                <button type="submit" class="btn btn-default">Отправить ссылку на оплату</button>
+            </form>
+        </div>
+    </div>
+</div>
